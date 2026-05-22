@@ -38,9 +38,9 @@ export default function RootLayout({
         className={`${bebas.variable} ${spaceMono.variable} ${outfit.variable}`}
       >
         {children}
-      </body>
 
-      <GoogleAnalytics gaId="G-GX76T1KR44" />
+        <GoogleAnalytics gaId="G-GX76T1KR44" />
+      </body>
     </html>
   );
 }
