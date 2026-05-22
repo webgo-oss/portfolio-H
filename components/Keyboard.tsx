@@ -551,10 +551,10 @@ export default function Keyboard() {
 
       if (soundEnabled) {
         await initAudio();
-        soundBtn.classList.add("on");
+        soundBtn?.classList.add("on");
         if (stxt) stxt.textContent = "Sound On";
       } else {
-        soundBtn.classList.remove("on");
+        soundBtn?.classList.remove("on");
         if (stxt) stxt.textContent = "Sound Off";
       }
     };
