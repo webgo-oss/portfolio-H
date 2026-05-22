@@ -3,19 +3,42 @@
 import { useEffect, useState } from "react";
 import { PROJECTS, initPortfolio } from "../components/script";
 
+type ProjectLink = {
+  label: string;
+  href: string;
+};
+
+type ProjectData = {
+  num: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  highlights: string[];
+  tags: string[];
+  links: ProjectLink[];
+};
+
+type ProjectMap = Record<string, ProjectData>;
+
+const projects = PROJECTS as ProjectMap;
+
 export default function PortfolioClient() {
-  const [activeProject, setActiveProject] = useState(null);
+  const [activeProject, setActiveProject] = useState<string | null>(null);
 
   useEffect(() => {
     const cleanup = initPortfolio(
-      (projectId) => setActiveProject(projectId), 
-      ()           => setActiveProject(null)        
+      (projectId: string) => setActiveProject(projectId),
+      () => setActiveProject(null)
     );
 
-    return cleanup;
+    return () => {
+      if (typeof cleanup === "function") {
+        cleanup();
+      }
+    };
   }, []);
 
-  const p = activeProject ? PROJECTS[activeProject] : null;
+  const p = activeProject ? projects[activeProject] : null;
 
   return (
     <>
@@ -37,7 +60,9 @@ export default function PortfolioClient() {
         <div className="ldr-bar-wrap">
           <div className="ldr-bar" id="ldr-bar" />
         </div>
-        <div className="ldr-status" id="ldr-status">Initializing scene</div>
+        <div className="ldr-status" id="ldr-status">
+          Initializing scene
+        </div>
         <div className="ldr-dots">
           <div className="ldr-dot" />
           <div className="ldr-dot" />
@@ -52,9 +77,14 @@ export default function PortfolioClient() {
       <div id="cursor-ring" />
 
       <div id="project-overlay" />
-      <aside id="project-drawer" role="dialog" aria-modal="true" aria-label="Project details">
+      <aside
+        id="project-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Project details"
+      >
         <div className="drawer-close">
-          <button className="drawer-close-btn" id="drawer-close-btn">
+          <button className="drawer-close-btn" id="drawer-close-btn" type="button">
             ✕ &nbsp;Close
           </button>
         </div>
@@ -70,30 +100,42 @@ export default function PortfolioClient() {
               {p.description
                 .trim()
                 .split("\n\n")
-                .map((para, i) => (
-                  <p className="drawer-desc" key={i}>{para}</p>
+                .map((para: string, i: number) => (
+                  <p className="drawer-desc" key={i}>
+                    {para}
+                  </p>
                 ))}
 
               <div className="drawer-divider" />
               <span className="drawer-section-label">Key Features</span>
               <div className="drawer-highlights">
-                {p.highlights.map((h, i) => (
-                  <div className="drawer-highlight" key={i}>{h}</div>
+                {p.highlights.map((h: string, i: number) => (
+                  <div className="drawer-highlight" key={i}>
+                    {h}
+                  </div>
                 ))}
               </div>
 
               <div className="drawer-divider" />
               <span className="drawer-section-label">Tech Stack</span>
               <div className="drawer-tags">
-                {p.tags.map((tag, i) => (
-                  <span className="drawer-tag" key={i}>{tag}</span>
+                {p.tags.map((tag: string, i: number) => (
+                  <span className="drawer-tag" key={i}>
+                    {tag}
+                  </span>
                 ))}
               </div>
 
               <span className="drawer-section-label">Links</span>
               <div className="drawer-links">
-                {p.links.map((l, i) => (
-                  <a className="drawer-link" href={l.href} target="_blank" rel="noreferrer" key={i}>
+                {p.links.map((l: ProjectLink, i: number) => (
+                  <a
+                    className="drawer-link"
+                    href={l.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={i}
+                  >
                     <span>{l.label}</span>
                     <span className="dl-arrow">↗</span>
                   </a>
@@ -110,8 +152,12 @@ export default function PortfolioClient() {
       </div>
 
       <div id="corner-tr" className="home-only">
-        <div className="time" id="clock">--:--:--</div>
-        <div className="date" id="datebox">--- -- ----</div>
+        <div className="time" id="clock">
+          --:--:--
+        </div>
+        <div className="date" id="datebox">
+          --- -- ----
+        </div>
       </div>
 
       <div className="side-line left home-only" />
@@ -142,9 +188,11 @@ export default function PortfolioClient() {
 
       <div id="bottom-strip" className="home-only">
         <div id="bottom-left-panel">
-          <button id="soundToggle">
+          <button id="soundToggle" type="button">
             <div className="knob" />
-            <span className="stxt" id="stxt">Sound Off</span>
+            <span className="stxt" id="stxt">
+              Sound Off
+            </span>
           </button>
 
           <div id="hero-intro">
@@ -168,7 +216,6 @@ export default function PortfolioClient() {
       </div>
 
       <div id="scroll-root">
-
         <section id="section-home">
           <div id="scene-wrapper">
             <canvas id="three-canvas" />
@@ -189,7 +236,6 @@ export default function PortfolioClient() {
           </div>
         </section>
 
-        {/* Projects */}
         <section id="section-projects" className="content-section">
           <div className="section-inner">
             <p className="sec-eyebrow reveal">01 / Selected Work</p>
@@ -201,7 +247,8 @@ export default function PortfolioClient() {
                 <p className="project-num">001</p>
                 <h3 className="project-name">Earth View – GeoTracker</h3>
                 <p className="project-short">
-                  An interactive 3D globe visualizing real-time satellites, flights, vessels, weather, and traffic with live telemetry.
+                  An interactive 3D globe visualizing real-time satellites, flights, vessels, weather,
+                  and traffic with live telemetry.
                 </p>
                 <div className="project-tags">
                   <span className="tag">Cesium</span>
@@ -210,7 +257,7 @@ export default function PortfolioClient() {
                   <span className="tag">TomTom</span>
                   <span className="tag">AISStream</span>
                 </div>
-                <button className="project-expand-btn">
+                <button className="project-expand-btn" type="button">
                   <span>View Details</span>
                   <span className="expand-icon">+</span>
                 </button>
@@ -220,7 +267,8 @@ export default function PortfolioClient() {
                 <p className="project-num">002</p>
                 <h3 className="project-name">Post-Quantum Cryptography Vault</h3>
                 <p className="project-short">
-                  A secure desktop vault using post-quantum ML-KEM-768 and AES-256-GCM with CLI, backups, and cloud sync.
+                  A secure desktop vault using post-quantum ML-KEM-768 and AES-256-GCM with CLI,
+                  backups, and cloud sync.
                 </p>
                 <div className="project-tags">
                   <span className="tag">Python</span>
@@ -229,7 +277,7 @@ export default function PortfolioClient() {
                   <span className="tag">Argon2</span>
                   <span className="tag">Ed25519</span>
                 </div>
-                <button className="project-expand-btn">
+                <button className="project-expand-btn" type="button">
                   <span>View Details</span>
                   <span className="expand-icon">+</span>
                 </button>
@@ -239,7 +287,9 @@ export default function PortfolioClient() {
                 <p className="project-num">003</p>
                 <h3 className="project-name">AI Roadmap Generator</h3>
                 <p className="project-short">
-                  Enter any topic and get a personalized 3D neural-network learning path across Beginner, Core, and Advanced tiers — with videos, diagrams, Manim explainer videos, and a full PDF dashboard.
+                  Enter any topic and get a personalized 3D neural-network learning path across
+                  Beginner, Core, and Advanced tiers — with videos, diagrams, Manim explainer videos,
+                  and a full PDF dashboard.
                 </p>
                 <div className="project-tags">
                   <span className="tag">Three.js</span>
@@ -249,7 +299,7 @@ export default function PortfolioClient() {
                   <span className="tag">D3.js</span>
                   <span className="tag">MongoDB</span>
                 </div>
-                <button className="project-expand-btn">
+                <button className="project-expand-btn" type="button">
                   <span>View Details</span>
                   <span className="expand-icon">+</span>
                 </button>
@@ -259,7 +309,9 @@ export default function PortfolioClient() {
                 <p className="project-num">004</p>
                 <h3 className="project-name">AI X-Ray Detection System</h3>
                 <p className="project-short">
-                  Upload a hand, elbow, or knee X-ray and get a Grad-CAM heatmap overlay, fracture prediction score, and interactive 2D/3D scan viewer — with a full report dashboard and history.
+                  Upload a hand, elbow, or knee X-ray and get a Grad-CAM heatmap overlay, fracture
+                  prediction score, and interactive 2D/3D scan viewer — with a full report dashboard and
+                  history.
                 </p>
                 <div className="project-tags">
                   <span className="tag">PyTorch</span>
@@ -269,7 +321,7 @@ export default function PortfolioClient() {
                   <span className="tag">Flask</span>
                   <span className="tag">React</span>
                 </div>
-                <button className="project-expand-btn">
+                <button className="project-expand-btn" type="button">
                   <span>View Details</span>
                   <span className="expand-icon">+</span>
                 </button>
@@ -278,7 +330,6 @@ export default function PortfolioClient() {
           </div>
         </section>
 
-        {/* About */}
         <section id="section-about" className="content-section">
           <div className="section-inner">
             <p className="sec-eyebrow reveal">02 / Who I Am</p>
@@ -288,23 +339,34 @@ export default function PortfolioClient() {
             <div className="about-layout">
               <div>
                 <p className="about-bio reveal">
-                  I&apos;m <strong>Hamza Shaikh</strong>, a software engineer with a strong foundation in
-                  programming, algorithms, web and app development, AI, and cloud technologies. Currently
-                  pursuing a B.Sc in Computer Science with a CGPA of 9/9.3.
+                  I&apos;m <strong>Hamza Shaikh</strong>, a software engineer with a strong foundation
+                  in programming, algorithms, web and app development, AI, and cloud technologies.
+                  Currently pursuing a B.Sc in Computer Science with a CGPA of 9/9.3.
                 </p>
                 <p className="about-bio reveal" style={{ marginTop: 20 }}>
-                  I&apos;m passionate about building <strong>efficient, scalable software solutions</strong> and
-                  contributing to real-world projects that make an impact — from 3D geo-visualization to
-                  post-quantum cryptography.
+                  I&apos;m passionate about building <strong>efficient, scalable software solutions</strong>{" "}
+                  and contributing to real-world projects that make an impact — from 3D geo-visualization
+                  to post-quantum cryptography.
                 </p>
 
                 <div className="skills-list">
                   {[
-                    "Python","JavaScript","C++","Node.js","Flask · Express.js",
-                    "MySQL · MongoDB","TensorFlow · OpenCV","Three.js",
-                    "HTML · CSS","Git · GitHub","REST APIs","Supabase · Firebase",
-                  ].map((skill) => (
-                    <div className="skill-item reveal" key={skill}>{skill}</div>
+                    "Python",
+                    "JavaScript",
+                    "C++",
+                    "Node.js",
+                    "Flask · Express.js",
+                    "MySQL · MongoDB",
+                    "TensorFlow · OpenCV",
+                    "Three.js",
+                    "HTML · CSS",
+                    "Git · GitHub",
+                    "REST APIs",
+                    "Supabase · Firebase",
+                  ].map((skill: string) => (
+                    <div className="skill-item reveal" key={skill}>
+                      {skill}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -312,10 +374,10 @@ export default function PortfolioClient() {
               <div className="stat-blocks">
                 {[
                   { num: "9.0", lbl: "CGPA out of 9.3" },
-                  { num: "3+",  lbl: "Major Projects Shipped" },
+                  { num: "3+", lbl: "Major Projects Shipped" },
                   { num: "10+", lbl: "Technologies Mastered" },
-                  { num: "250+",   lbl: "Problems Solved on LeetCode" },
-                ].map(({ num, lbl }) => (
+                  { num: "250+", lbl: "Problems Solved on LeetCode" },
+                ].map(({ num, lbl }: { num: string; lbl: string }) => (
                   <div className="stat-block reveal" key={lbl}>
                     <div className="stat-num">{num}</div>
                     <div className="stat-lbl">{lbl}</div>
@@ -326,7 +388,6 @@ export default function PortfolioClient() {
           </div>
         </section>
 
-        {/* Education */}
         <section id="section-education" className="content-section">
           <div className="section-inner">
             <p className="sec-eyebrow reveal">03 / Background</p>
@@ -355,17 +416,19 @@ export default function PortfolioClient() {
             </div>
 
             <div style={{ marginTop: 72 }}>
-              <p className="sec-eyebrow reveal" style={{ marginBottom: 24 }}>Core Technical Skills</p>
+              <p className="sec-eyebrow reveal" style={{ marginBottom: 24 }}>
+                Core Technical Skills
+              </p>
 
               <div className="cert-grid">
                 {[
-                  { issuer: "Languages",            name: "Python, JavaScript, C++, HTML, CSS, Go (Basic)" },
+                  { issuer: "Languages", name: "Python, JavaScript, C++, HTML, CSS, Go (Basic)" },
                   { issuer: "Frameworks & Runtime", name: "Node.js, Flask, Express.js, Three.js" },
-                  { issuer: "Databases & Cloud",    name: "MySQL, MongoDB, Supabase, Firebase" },
-                  { issuer: "AI / CV / Tools",      name: "TensorFlow, OpenCV, Git, GitHub, VS Code, REST APIs" },
-                  { issuer: "CS Fundamentals",      name: "Data Structures & Algorithms, OOPs, Problem Solving" },
-                  { issuer: "Competitive Coding",   name: "Active LeetCode practitioner — DSA & problem solving" },
-                ].map(({ issuer, name }) => (
+                  { issuer: "Databases & Cloud", name: "MySQL, MongoDB, Supabase, Firebase" },
+                  { issuer: "AI / CV / Tools", name: "TensorFlow, OpenCV, Git, GitHub, VS Code, REST APIs" },
+                  { issuer: "CS Fundamentals", name: "Data Structures & Algorithms, OOPs, Problem Solving" },
+                  { issuer: "Competitive Coding", name: "Active LeetCode practitioner — DSA & problem solving" },
+                ].map(({ issuer, name }: { issuer: string; name: string }) => (
                   <div className="cert-card reveal" key={issuer}>
                     <div className="cert-issuer">{issuer}</div>
                     <div className="cert-name">{name}</div>
@@ -376,7 +439,6 @@ export default function PortfolioClient() {
           </div>
         </section>
 
-        {/* Contact */}
         <section id="section-contact" className="content-section">
           <div className="section-inner">
             <p className="sec-eyebrow reveal">04 / Reach Out</p>
@@ -386,8 +448,9 @@ export default function PortfolioClient() {
             <div className="contact-layout">
               <div>
                 <p className="contact-text reveal">
-                  I&apos;m seeking roles in dynamic organizations where I can apply my technical knowledge,
-                  contribute to real-world projects, and build efficient, scalable software solutions.
+                  I&apos;m seeking roles in dynamic organizations where I can apply my technical
+                  knowledge, contribute to real-world projects, and build efficient, scalable software
+                  solutions.
                 </p>
                 <p
                   className="contact-text reveal"
@@ -400,16 +463,25 @@ export default function PortfolioClient() {
 
               <div className="contact-links reveal">
                 {[
-                  { label: "linkedin",    val: "hamzashaikh1654w@gmail.com", href: "https://www.linkedin.com/in/hamza-shaikh-0414193ab/" },
-                  { label: "Email",    val: "hamzashaikh1654w@gmail.com", href: "mailto:hamzashaikh1654w@gmail.com" },
-                  { label: "GitHub",   val: "github.com",     href: "https://github.com/webgo-oss",    ext: true },
-                  { label: "LeetCode", val: "leetcode.com",   href: "https://leetcode.com/u/SyupWy7CEZ/",  ext: true },
-                ].map(({ label, val, href, ext }) => (
+                  {
+                    label: "LinkedIn",
+                    val: "linkedin.com",
+                    href: "https://www.linkedin.com/in/hamza-shaikh-0414193ab/",
+                  },
+                  {
+                    label: "Email",
+                    val: "hamzashaikh1654w@gmail.com",
+                    href: "mailto:hamzashaikh1654w@gmail.com",
+                  },
+                  { label: "GitHub", val: "github.com", href: "https://github.com/webgo-oss" },
+                  { label: "LeetCode", val: "leetcode.com", href: "https://leetcode.com/u/SyupWy7CEZ/" },
+                ].map(({ label, val, href }) => (
                   <a
                     className="contact-link"
                     href={href}
                     key={label}
-                    {...(ext ? { target: "_blank", rel: "noreferrer" } : {})}
+                    target={href.startsWith("http") ? "_blank" : undefined}
+                    rel={href.startsWith("http") ? "noreferrer" : undefined}
                   >
                     <span className="cl-label">{label}</span>
                     <span className="cl-val">{val}</span>
@@ -420,10 +492,8 @@ export default function PortfolioClient() {
             </div>
           </div>
         </section>
+      </div>
 
-      </div>{/* /scroll-root */}
-
-      {/* ── Footer ───────────────────────────────────────────────── */}
       <footer id="site-footer">
         <div className="footer-inner">
           <div className="footer-top">
@@ -438,14 +508,29 @@ export default function PortfolioClient() {
               <a className="footer-link" href="mailto:hamzashaikh1654w@gmail.com">
                 hamzashaikh1654w@gmail.com
               </a>
-              <a className="footer-link" href="https://www.linkedin.com/in/hamza-shaikh-0414193ab/">
-               linkedin
+              <a
+                className="footer-link"
+                href="https://www.linkedin.com/in/hamza-shaikh-0414193ab/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                LinkedIn
               </a>
-              <a className="footer-link" href="https://github.com/webgo-oss" target="_blank" rel="noreferrer">
-                github.com
+              <a
+                className="footer-link"
+                href="https://github.com/webgo-oss"
+                target="_blank"
+                rel="noreferrer"
+              >
+                GitHub
               </a>
-              <a className="footer-link" href="https://leetcode.com/u/SyupWy7CEZ/" target="_blank" rel="noreferrer">
-                leetcode.com
+              <a
+                className="footer-link"
+                href="https://leetcode.com/u/SyupWy7CEZ/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                LeetCode
               </a>
             </div>
           </div>

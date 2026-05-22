@@ -5,6 +5,14 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+type KeyMesh = THREE.Mesh & {
+  userData: {
+    targetZ?: number;
+    currentZ?: number;
+    parentKey?: THREE.Mesh;
+  };
+};
+
 export default function Keyboard() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -14,14 +22,15 @@ export default function Keyboard() {
 
     const cursorDot = document.getElementById("cursor") as HTMLDivElement | null;
     const cursorRing = document.getElementById("cursor-ring") as HTMLDivElement | null;
-    const heroEl = document.getElementById("hero") as HTMLDivElement | null;
-    const scrollHint = document.getElementById("scroll-hint") as HTMLDivElement | null;
-    const canvasEl = document.getElementById("three-canvas") as HTMLCanvasElement | null;
+    const heroEl = document.getElementById("hero") as HTMLElement | null;
+    const scrollHint = document.getElementById("scroll-hint") as HTMLElement | null;
     const soundBtn = document.getElementById("soundToggle") as HTMLButtonElement | null;
     const stxt = document.getElementById("stxt") as HTMLSpanElement | null;
 
     const tickerList = document.getElementById("ticker-list") as HTMLDivElement | null;
-    const tickItems = tickerList ? Array.from(tickerList.querySelectorAll<HTMLElement>(".ticker-item")) : [];
+    const tickItems = tickerList
+      ? Array.from(tickerList.querySelectorAll<HTMLElement>(".ticker-item"))
+      : [];
     const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".nav-item"));
     const spineDot = document.getElementById("nav-spine-dot") as HTMLDivElement | null;
     const navItemsEl = document.querySelector("#side-right .nav-items") as HTMLDivElement | null;
@@ -44,11 +53,17 @@ export default function Keyboard() {
     let lastKey: THREE.Mesh | null = null;
     let kbGroup: THREE.Group | null = null;
 
-    const sections = ["section-home", "section-projects", "section-about", "section-frontend", "section-contact"];
+    const sections = [
+      "section-home",
+      "section-projects",
+      "section-about",
+      "section-frontend",
+      "section-contact",
+    ] as const;
 
     const raycaster = new THREE.Raycaster();
     const mouse3d = new THREE.Vector2();
-    const allKeys: THREE.Mesh[] = [];
+    const allKeys: KeyMesh[] = [];
     const hitboxes: THREE.Mesh[] = [];
     const LERP = 0.15;
     const PRESS = -0.055;
@@ -82,7 +97,7 @@ export default function Keyboard() {
 
     function updateNav() {
       const midY = window.scrollY + window.innerHeight * 0.4;
-      let activeId = sections[0];
+      let activeId: (typeof sections)[number] = sections[0];
 
       for (const id of sections) {
         const el = document.getElementById(id);
@@ -105,10 +120,16 @@ export default function Keyboard() {
     }
 
     function animSys() {
-      const defs = [
+      const defs: Array<{
+        bar: string;
+        val: string;
+        base: number;
+        range: number;
+        label?: (v: number) => number;
+      }> = [
         { bar: "bar-cpu", val: "val-cpu", base: 35, range: 40 },
         { bar: "bar-mem", val: "val-mem", base: 55, range: 25 },
-        { bar: "bar-fps", val: "val-fps", base: 88, range: 12, label: (v: number) => Math.round(v) },
+        { bar: "bar-fps", val: "val-fps", base: 88, range: 12, label: (v) => Math.round(v) },
         { bar: "bar-net", val: "val-net", base: 15, range: 40 },
       ];
 
@@ -131,12 +152,15 @@ export default function Keyboard() {
 
     function animCursor() {
       cursorRAF = window.requestAnimationFrame(animCursor);
+
       if (cursorDot) {
         cursorDot.style.left = `${mx}px`;
         cursorDot.style.top = `${my}px`;
       }
+
       rx += (mx - rx) * 0.12;
       ry += (my - ry) * 0.12;
+
       if (cursorRing) {
         cursorRing.style.left = `${rx}px`;
         cursorRing.style.top = `${ry}px`;
@@ -150,6 +174,7 @@ export default function Keyboard() {
 
     function playClack() {
       if (!soundEnabled || !audioCtx) return;
+
       const ctx = audioCtx;
       const t0 = ctx.currentTime;
 
@@ -197,16 +222,20 @@ export default function Keyboard() {
 
     function splitByIslands(mesh: THREE.Mesh, targetGroup: THREE.Group) {
       const geo = mesh.geometry.clone() as THREE.BufferGeometry;
-      if (!geo.index) return [mesh];
-
       const idx = geo.index;
+      const posAttr = geo.getAttribute("position") as THREE.BufferAttribute | undefined;
+      const normalAttr = geo.getAttribute("normal") as THREE.BufferAttribute | undefined;
+      const uvAttr = geo.getAttribute("uv") as THREE.BufferAttribute | undefined;
+
+      if (!idx || !posAttr || !normalAttr || !uvAttr) return [mesh];
+
       const triCount = idx.count / 3;
-      const v2t = Array.from({ length: geo.attributes.position.count }, () => [] as number[]);
+      const v2t = Array.from({ length: posAttr.count }, () => [] as number[]);
 
       for (let i = 0; i < triCount; i++) {
-        v2t[idx.getX(i * 3)].push(i);
-        v2t[idx.getX(i * 3 + 1)].push(i);
-        v2t[idx.getX(i * 3 + 2)].push(i);
+        v2t[idx.getX(i * 3)]?.push(i);
+        v2t[idx.getX(i * 3 + 1)]?.push(i);
+        v2t[idx.getX(i * 3 + 2)]?.push(i);
       }
 
       const visited = new Uint8Array(triCount);
@@ -220,12 +249,14 @@ export default function Keyboard() {
         visited[i] = 1;
 
         while (q.length) {
-          const tri = q.shift() as number;
+          const tri = q.shift();
+          if (tri === undefined) continue;
+
           comp.push(tri);
 
           for (let j = 0; j < 3; j++) {
             const v = idx.getX(tri * 3 + j);
-            v2t[v].forEach((n) => {
+            v2t[v]?.forEach((n) => {
               if (!visited[n]) {
                 visited[n] = 1;
                 q.push(n);
@@ -246,9 +277,9 @@ export default function Keyboard() {
             const o = idx.getX(tri * 3 + j);
             if (!map.has(o)) {
               map.set(o, sp.length / 3);
-              sp.push(geo.attributes.position.getX(o), geo.attributes.position.getY(o), geo.attributes.position.getZ(o));
-              sn.push(geo.attributes.normal.getX(o), geo.attributes.normal.getY(o), geo.attributes.normal.getZ(o));
-              su.push(geo.attributes.uv.getX(o), geo.attributes.uv.getY(o));
+              sp.push(posAttr.getX(o), posAttr.getY(o), posAttr.getZ(o));
+              sn.push(normalAttr.getX(o), normalAttr.getY(o), normalAttr.getZ(o));
+              su.push(uvAttr.getX(o), uvAttr.getY(o));
             }
             si.push(map.get(o)!);
           }
@@ -267,12 +298,11 @@ export default function Keyboard() {
         mat.metalness = 0.6;
         mat.roughness = 0.3;
 
-        const nm = new THREE.Mesh(sg, mat);
+        const nm = new THREE.Mesh(sg, mat) as KeyMesh;
+        nm.userData.targetZ = 0;
+        nm.userData.currentZ = 0;
 
         if (size.x < 1.5 || size.y < 1.0) {
-          nm.userData.targetZ = 0;
-          nm.userData.currentZ = 0;
-
           const hg = sg.clone();
           hg.center();
           hg.scale(0.85, 0.85, 1);
@@ -320,6 +350,7 @@ export default function Keyboard() {
       pPos[i * 3] = (Math.random() - 0.5) * 90;
       pPos[i * 3 + 1] = (Math.random() - 0.5) * 90;
       pPos[i * 3 + 2] = (Math.random() - 0.5) * 90;
+
       const tt = Math.random();
       pCol[i * 3] = 1;
       pCol[i * 3 + 1] = 0.3 + tt * 0.55;
@@ -370,7 +401,7 @@ export default function Keyboard() {
       gltf.scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
           const mesh = child as THREE.Mesh;
-          const materialName = (mesh.material as any)?.name ?? "";
+          const materialName = String((mesh.material as { name?: string } | undefined)?.name ?? "");
           const childName = mesh.name ?? "";
 
           if (materialName.toLowerCase().includes("button") || childName.toLowerCase().includes("key")) {
@@ -453,7 +484,6 @@ export default function Keyboard() {
 
       if (heroEl) heroEl.style.opacity = Math.max(0, 1 - sf * 2.5).toString();
       if (scrollHint) scrollHint.style.opacity = Math.max(0, 1 - sf * 4).toString();
-      if (canvasEl) canvasEl.style.opacity = Math.max(0, 1 - sf * 1.8).toString();
 
       if (kbGroup) {
         kbGroup.position.y = -0.6 - sf * 3.2;
@@ -466,27 +496,37 @@ export default function Keyboard() {
       if (keyboardVisible && hitboxes.length > 0) {
         raycaster.setFromCamera(mouse3d, camera);
         const hits = raycaster.intersectObjects(hitboxes);
-        const activeKey = hits.length > 0 ? (hits[0].object.userData.parentKey as THREE.Mesh) : null;
+        const activeKey =
+          hits.length > 0 ? (hits[0].object.userData.parentKey as THREE.Mesh | null) : null;
 
         if (activeKey && activeKey !== lastKey) playClack();
         lastKey = activeKey;
 
         allKeys.forEach((key) => {
           const material = key.material as THREE.MeshStandardMaterial;
+
           if (key === activeKey) {
             key.userData.targetZ = PRESS;
             material.emissive.setHex(KEY_COLOR);
-            material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity || 0, 2.2, LERP);
+            material.emissiveIntensity = THREE.MathUtils.lerp(
+              material.emissiveIntensity || 0,
+              2.2,
+              LERP
+            );
           } else {
             key.userData.targetZ = 0;
-            material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity || 0, 0, LERP);
+            material.emissiveIntensity = THREE.MathUtils.lerp(
+              material.emissiveIntensity || 0,
+              0,
+              LERP
+            );
           }
 
-          const delta = key.userData.targetZ - key.userData.currentZ;
+          const delta = (key.userData.targetZ ?? 0) - (key.userData.currentZ ?? 0);
           if (Math.abs(delta) > 0.0005) {
-            key.userData.currentZ += delta * LERP;
-            key.position.z = key.userData.currentZ;
-          } else if (key.userData.targetZ === 0) {
+            key.userData.currentZ = (key.userData.currentZ ?? 0) + delta * LERP;
+            key.position.z = key.userData.currentZ ?? 0;
+          } else if ((key.userData.targetZ ?? 0) === 0) {
             key.position.z = 0;
             key.userData.currentZ = 0;
           }
@@ -506,22 +546,25 @@ export default function Keyboard() {
       renderer.render(scene, camera);
     };
 
+    const handleSoundToggle = async () => {
+      soundEnabled = !soundEnabled;
+
+      if (soundEnabled) {
+        await initAudio();
+        soundBtn.classList.add("on");
+        if (stxt) stxt.textContent = "Sound On";
+      } else {
+        soundBtn.classList.remove("on");
+        if (stxt) stxt.textContent = "Sound Off";
+      }
+    };
+
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
 
     if (soundBtn) {
-      soundBtn.addEventListener("click", async () => {
-        soundEnabled = !soundEnabled;
-        if (soundEnabled) {
-          await initAudio();
-          soundBtn.classList.add("on");
-          if (stxt) stxt.textContent = "Sound On";
-        } else {
-          soundBtn.classList.remove("on");
-          if (stxt) stxt.textContent = "Sound Off";
-        }
-      });
+      soundBtn.addEventListener("click", handleSoundToggle);
     }
 
     updateClock();
@@ -533,6 +576,11 @@ export default function Keyboard() {
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
+
+      if (soundBtn) {
+        soundBtn.removeEventListener("click", handleSoundToggle);
+      }
+
       window.cancelAnimationFrame(cursorRAF);
       window.cancelAnimationFrame(animRAF);
       window.clearInterval(advanceTickerTimer);
@@ -541,7 +589,10 @@ export default function Keyboard() {
       revealObs.disconnect();
       controls.dispose();
       renderer.dispose();
-      if (audioCtx) audioCtx.close();
+
+      if (audioCtx) {
+        void audioCtx.close();
+      }
     };
   }, []);
 
