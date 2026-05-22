@@ -2,7 +2,7 @@ import "./globals.css";
 import { Bebas_Neue, Space_Mono, Outfit } from "next/font/google";
 import type { Metadata } from "next";
 import React from "react";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -34,12 +34,28 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Google Analytics Script */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-GX76T1KR44"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-GX76T1KR44');
+          `}
+        </Script>
+      </head>
+
       <body
         className={`${bebas.variable} ${spaceMono.variable} ${outfit.variable}`}
       >
         {children}
-
-        <GoogleAnalytics gaId="G-GX76T1KR44" />
       </body>
     </html>
   );
