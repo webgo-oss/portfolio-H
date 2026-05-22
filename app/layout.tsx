@@ -2,7 +2,7 @@ import "./globals.css";
 import { Bebas_Neue, Space_Mono, Outfit } from "next/font/google";
 import type { Metadata } from "next";
 import React from "react";
-import { Analytics } from "@vercel/analytics/react";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -38,9 +38,8 @@ export default function RootLayout({
         className={`${bebas.variable} ${spaceMono.variable} ${outfit.variable}`}
       >
         {children}
-
-        <Analytics />
       </body>
+      <GoogleAnalytics gaId="G-GX76T1KR44" />
     </html>
   );
 }
