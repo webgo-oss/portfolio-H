@@ -2,6 +2,7 @@ import "./globals.css";
 import { Bebas_Neue, Space_Mono, Outfit } from "next/font/google";
 import type { Metadata } from "next";
 import React from "react";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -38,6 +39,8 @@ export default function RootLayout({
       >
         {children}
       </body>
+
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />
     </html>
   );
 }
