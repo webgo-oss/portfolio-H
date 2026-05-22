@@ -1,5 +1,7 @@
 import "./globals.css";
 import { Bebas_Neue, Space_Mono, Outfit } from "next/font/google";
+import type { Metadata } from "next";
+import React from "react";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -19,15 +21,21 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Hamza Shaikh — Software Engineer",
   description: "Portfolio website for Hamza Shaikh",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body className={`${bebas.variable} ${spaceMono.variable} ${outfit.variable}`}>
+      <body
+        className={`${bebas.variable} ${spaceMono.variable} ${outfit.variable}`}
+      >
         {children}
       </body>
     </html>
