@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+
+# Portfolio-H
+
+A personal portfolio website built with Next.js, TypeScript, and Three.js to showcase projects, skills, and experience.
+
+**https://portfolio-h-rust.vercel.app/** • **Documentation** • **Report an Issue**
+
+</div>
+
+---
+
+## About
+
+Portfolio-H is my personal portfolio website that presents my projects, technical skills, education, and experience through an interactive and responsive interface. The project combines modern web technologies with 3D elements to create an engaging user experience while maintaining performance and accessibility.
+
+---
+
+## Features
+
+* Responsive design
+* Interactive 3D experience
+* Project showcase
+* Resume download
+* Smooth page transitions
+* Mobile-friendly interface
+* Modern UI built with the Next.js App Router
+
+---
+
+## Technology Stack
+
+| Technology       | Purpose         |
+| ---------------- | --------------- |
+| Next.js          | React Framework |
+| React            | User Interface  |
+| TypeScript       | Type Safety     |
+| Three.js         | 3D Graphics     |
+| Tailwind CSS     | Styling         |
+| Vercel Analytics | Analytics       |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Clone the repository
+
+```bash
+git clone https://github.com/webgo-oss/portfolio-H.git
+cd portfolio-H
+```
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000` in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```text
+Portfolio-H/
+├── app/
+├── components/
+├── public/
+├── package.json
+└── README.md
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This repository contains the source code for my personal portfolio. The design and content are intended for personal use and may not be copied or redistributed without permission.
