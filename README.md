@@ -78,7 +78,3 @@ Portfolio-H/
 ```
 
 ---
-
-
-
-This repository contains the source code for my personal portfolio. The design and content are intended for personal use and may not be copied or redistributed without permission.
