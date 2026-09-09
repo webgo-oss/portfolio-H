@@ -202,7 +202,7 @@ export default function PortfolioClient() {
             </span>
           </div>
 
-          <a id="resume-btn" href="/Hamza.pdf" download="Hamza.pdf">
+          <a id="resume-btn" href="/Hamza.pdf" download="hamza.pdf">
             <span className="rb-icon">↓</span>
             <span className="rb-text">Get Resume</span>
           </a>
